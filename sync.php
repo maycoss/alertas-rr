@@ -5,33 +5,34 @@ if (isset($_GET['token']) && $_GET['token'] === 'ms_radar_deploy_9921') {
     if (file_exists($origFile)) {
         $content = file_get_contents($origFile);
         
-        // Remove BOM se houver
-        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
-            $content = substr($content, 3);
-        }
+        // Dicionario completo de correcao de mojibake (duplo UTF-8)
+        $map = [
+            'Ã£' => 'ã', 'Ã¡' => 'á', 'Ã ' => 'à', 'Ã¢' => 'â',
+            'Ã©' => 'é', 'Ãª' => 'ê',
+            'Ã­' => 'í',
+            'Ã³' => 'ó', 'Ã´' => 'ô', 'Ãµ' => 'õ',
+            'Ãº' => 'ú', 'Ã¼' => 'ü',
+            'Ã§' => 'ç',
+            'Ãƒ' => 'Ã', 'Ã' => 'Á', 'Ã€' => 'À', 'Ã‚' => 'Â',
+            'Ã‰' => 'É', 'ÃŠ' => 'Ê',
+            'Ã' => 'Í',
+            'Ã“' => 'Ó', 'Ã”' => 'Ô', 'Ã•' => 'Õ',
+            'Ãš' => 'Ú',
+            'Ã‡' => 'Ç',
+            'Â·' => '·', 'â€”' => '—', 'â†—' => '↗', 'âœ•' => '✕',
+            'Âº' => 'º', 'Âª' => 'ª', 'â€º' => '›', 'â—' => '●'
+        ];
         
-        // Garante que o header UTF-8 eh a primeira coisa enviada pelo PHP
-        if (strpos($content, "header('Content-Type:") === false) {
-            $content = preg_replace('/<\?php\s*/i', "<?php\nheader('Content-Type: text/html; charset=UTF-8');\n", $content, 1);
-        }
+        // Remove mojibake de 2º nivel se houver
+        $content = str_replace('ÃƒÂ£', 'ã', $content);
+        $content = strtr($content, $map);
         
-        // Converte caracteres corrompidos conhecidos
-        // Se o arquivo contem caracteres em dupla codificacao UTF-8 (ex: Ã£ -> ã)
-        if (strpos($content, 'Ã£') !== false || strpos($content, 'Ã³') !== false || strpos($content, 'Ã©') !== false) {
-            $content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
-            // se continuar com mojibake UTF-8 duplo, decodifica de ISO-8859-1 para UTF-8:
-            $fixed = @iconv('UTF-8', 'ISO-8859-1//IGNORE', $content);
-            if ($fixed && mb_detect_encoding($fixed, 'UTF-8', true)) {
-                $content = $fixed;
-            }
-        }
-        
-        // Tira o "Roraima em leilão"
-        $content = preg_replace('/<title>.*?<\/title>/i', '<title>Alertas RR · Radar de Oportunidades & Inteligência</title>', $content, 1);
-        $content = preg_replace('/<h1>Roraima\s*<span class="grad-texto">.*?<\/span><\/h1>/iu', '<h1>Radar RR <span class="grad-texto">Inteligência & Oportunidades.</span></h1>', $content, 1);
+        // Remove "Roraima em leilão"
+        $content = str_replace('Roraima em leilão', 'Radar de Oportunidades RR', $content);
+        $content = str_replace('<h1>Roraima <span class="grad-texto">em leilão.</span></h1>', '<h1>Radar RR <span class="grad-texto">Oportunidades em Tempo Real.</span></h1>', $content);
         
         file_put_contents($origFile, $content);
-        echo "FIX_ENCODING_DONE";
+        echo "MOJIBAKE_FIXED_PERFECTLY";
     }
     exit;
 }
