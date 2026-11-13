@@ -1,63 +1,37 @@
-﻿<?php
+<?php
 $origFile = dirname(__DIR__) . '/alertas/index.php';
 
 if (isset($_GET['token']) && $_GET['token'] === 'ms_radar_deploy_9921') {
     if (file_exists($origFile)) {
         $content = file_get_contents($origFile);
         
-        // 1. Title
-        $content = str_replace('<title>Alertas RR · Roraima em leilão</title>', '<title>Alertas RR · Radar de Oportunidades</title>', $content);
-        
-        // 2. H1
-        $content = str_replace('<h1>Roraima <span class="grad-texto">em leilão.</span></h1>', '<h1>Radar RR <span class="grad-texto">em tempo real.</span></h1>', $content);
-        
-        // 3. Melhoria cirurgica do visual
-        $cssMod = '
-/* --- UPGRADE VISUAL CIRURGICO --- */
-:root {
-  --vazio: #08090d !important;
-  --materia: #12151c !important;
-  --laranja: #ff6a00 !important;
-  --ouro: #ffb800 !important;
-  --grad: linear-gradient(135deg, #e65100, #ff8f00) !important;
-  --grad-ouro: linear-gradient(135deg, #ff8f00, #ffca28) !important;
-}
-.topo {
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  background: rgba(8, 9, 13, 0.85) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-.bloco {
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
-}
-.bloco:hover {
-  transform: translateY(-4px) !important;
-  border-color: rgba(255, 106, 0, 0.45) !important;
-  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), 0 0 24px -6px rgba(255, 106, 0, 0.25) !important;
-}
-.capa .cracha {
-  background: rgba(255, 106, 0, 0.1) !important;
-  border: 1px solid rgba(255, 106, 0, 0.3) !important;
-  box-shadow: 0 0 15px rgba(255, 106, 0, 0.15) !important;
-}
-.btn {
-  letter-spacing: 0.05em !important;
-  box-shadow: 0 4px 18px rgba(230, 81, 0, 0.35) !important;
-}
-.btn:hover {
-  box-shadow: 0 6px 24px rgba(255, 106, 0, 0.5) !important;
-}
-';
-        if (strpos($content, '/* --- UPGRADE VISUAL CIRURGICO --- */') === false) {
-            $content = str_replace('</style>', $cssMod . '</style>', $content);
+        // Remove BOM se houver
+        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
+            $content = substr($content, 3);
         }
         
+        // Garante que o header UTF-8 eh a primeira coisa enviada pelo PHP
+        if (strpos($content, "header('Content-Type:") === false) {
+            $content = preg_replace('/<\?php\s*/i', "<?php\nheader('Content-Type: text/html; charset=UTF-8');\n", $content, 1);
+        }
+        
+        // Converte caracteres corrompidos conhecidos
+        // Se o arquivo contem caracteres em dupla codificacao UTF-8 (ex: Ã£ -> ã)
+        if (strpos($content, 'Ã£') !== false || strpos($content, 'Ã³') !== false || strpos($content, 'Ã©') !== false) {
+            $content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
+            // se continuar com mojibake UTF-8 duplo, decodifica de ISO-8859-1 para UTF-8:
+            $fixed = @iconv('UTF-8', 'ISO-8859-1//IGNORE', $content);
+            if ($fixed && mb_detect_encoding($fixed, 'UTF-8', true)) {
+                $content = $fixed;
+            }
+        }
+        
+        // Tira o "Roraima em leilão"
+        $content = preg_replace('/<title>.*?<\/title>/i', '<title>Alertas RR · Radar de Oportunidades & Inteligência</title>', $content, 1);
+        $content = preg_replace('/<h1>Roraima\s*<span class="grad-texto">.*?<\/span><\/h1>/iu', '<h1>Radar RR <span class="grad-texto">Inteligência & Oportunidades.</span></h1>', $content, 1);
+        
         file_put_contents($origFile, $content);
-        echo "CLEAN_SURGICAL_APPLIED";
+        echo "FIX_ENCODING_DONE";
     }
     exit;
 }
