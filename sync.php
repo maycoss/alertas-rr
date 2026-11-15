@@ -1,115 +1,64 @@
 <?php
-$alertasDir = dirname(__DIR__) . '/alertas';
-$v2Dir = __DIR__;
+$publicHtml = dirname(__DIR__); // /home/u145126467/domains/maycosantos.lel.br/public_html
+$alertasDir = $publicHtml . '/alertas';
+$radarDir   = $publicHtml . '/radar';
+$v2Dir      = __DIR__;
+
+function rcopy($src, $dst) {
+    if (!is_dir($src)) return;
+    if (!is_dir($dst)) @mkdir($dst, 0755, true);
+    $dir = opendir($src);
+    while (false !== ($file = readdir($dir))) {
+        if (($file != '.') && ($file != '..')) {
+            if (is_dir($src . '/' . $file)) {
+                rcopy($src . '/' . $file, $dst . '/' . $file);
+            } else {
+                copy($src . '/' . $file, $dst . '/' . $file);
+            }
+        }
+    }
+    closedir($dir);
+}
 
 if (isset($_GET['token']) && $_GET['token'] === 'ms_radar_deploy_9921') {
-    // 1. Instala email_templates.php na pasta alertas
+
+    // 1. Garante a copia de email_templates.php e novo index.php para alertas
     copy($v2Dir . '/email_templates.php', $alertasDir . '/email_templates.php');
-
-    // 2. Atualiza alNotificarLotes em lib_lotes.php para enviar HTML + Fallback Plain Text
-    $lotesPhp = file_get_contents($alertasDir . '/lib_lotes.php');
-    if (strpos($lotesPhp, "require_once __DIR__ . '/email_templates.php';") === false) {
-        $lotesPhp = "<?php\nrequire_once __DIR__ . '/email_templates.php';\n" . substr($lotesPhp, 5);
+    if (file_exists($v2Dir . '/index.php')) {
+        copy($v2Dir . '/index.php', $alertasDir . '/index.php');
     }
 
-    $novaNotificarLotes = 'function alNotificarLotes(array $lotes) {
-    [$titulo, $plainBody] = alEmailLotes($lotes);
-    $subject = "=?UTF-8?B?" . base64_encode($titulo) . "?=";
-    
-    // Gera HTML estilizado
-    $htmlBody = alEmailCabecalhoHTML("OPORTUNIDADES IDENTIFICADAS EM RORAIMA");
-    foreach ($lotes as $l) {
-        $htmlBody .= alFormataCardLoteHTML($l);
-    }
-    $htmlBody .= alEmailRodapeHTML();
+    // 2. Copia recursiva de alertas/ para radar/
+    rcopy($alertasDir, $radarDir);
 
-    $boundary = "==_BOUNDARY_" . md5(uniqid((string)time(), true));
-    $headers  = "MIME-Version: 1.0\r\n";
-    $headers .= "From: Radar RR <" . ALERTAS_EMAIL_FROM . ">\r\n";
-    $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
-
-    $message  = "--{$boundary}\r\n";
-    $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $message .= $plainBody . "\r\n\r\n";
-
-    $message .= "--{$boundary}\r\n";
-    $message .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $message .= $htmlBody . "\r\n\r\n";
-    $message .= "--{$boundary}--\r\n";
-
-    @mail(ALERTAS_EMAIL_DESTINO, $subject, $message, $headers);
-}';
-
-    // Substitui a funcao antiga
-    $lotesPhp = preg_replace('/function alNotificarLotes\(array \$lotes\)\s*\{.*?\n\}/s', $novaNotificarLotes, $lotesPhp);
-    file_put_contents($alertasDir . '/lib_lotes.php', $lotesPhp);
-
-    // 3. Atualiza alNotificar em lib.php
-    $libPhp = file_get_contents($alertasDir . '/lib.php');
-    if (strpos($libPhp, "require_once __DIR__ . '/email_templates.php';") === false) {
-        $libPhp = "<?php\nrequire_once __DIR__ . '/email_templates.php';\n" . substr($libPhp, 5);
+    // 3. Atualiza config.php dentro de radar/
+    if (file_exists($radarDir . '/config.php')) {
+        $cfg = file_get_contents($radarDir . '/config.php');
+        $cfg = str_replace("define('ALERTAS_URL', 'https://maycosantos.lel.br/alertas');", "define('ALERTAS_URL', 'https://radar.maycosantos.lel.br');", $cfg);
+        $cfg = str_replace("define('ALERTAS_URL', 'http://maycosantos.lel.br/alertas');", "define('ALERTAS_URL', 'https://radar.maycosantos.lel.br');", $cfg);
+        file_put_contents($radarDir . '/config.php', $cfg);
     }
 
-    $novaNotificarEditais = 'function alNotificar($itens, $novos, $rev) {
-    $tem_leilao = false;
-    foreach ($itens as $i) { if (strpos((string)($i[\'tipo\'] ?? \'\'), \'Leilao eletronico da Receita\') === 0) { $tem_leilao = true; break; } }
-    $titulo  = $tem_leilao ? ">> {$novos} NOVIDADE(S) EM RR [RECEITA FEDERAL]" : ">> {$novos} NOVO(S) EDITAL(IS) DE LEILOEIRO EM RR";
-    $subject = "=?UTF-8?B?" . base64_encode($titulo . ($rev ? " [+{$rev} P/ REVISAO]" : "")) . "?=";
+    // 4. Cria .htaccess de redirecionamento 301 na pasta antiga /alertas/
+    $htaccessAntigo = "<IfModule mod_rewrite.c>\n" .
+                      "RewriteEngine On\n" .
+                      "RewriteRule ^(.*)$ https://radar.maycosantos.lel.br/$1 [R=301,L]\n" .
+                      "</IfModule>\n";
+    file_put_contents($alertasDir . '/.htaccess', $htaccessAntigo);
 
-    $plainBody  = "RADAR RR :: MONITOR DE EDITAIS E LEILÕES\r\n" . str_repeat(\'=\', 50) . "\r\n\r\n";
-    $htmlCards = "";
-    foreach ($itens as $i) {
-        $plainBody .= "[+] " . ($i[\'orgao\'] ?? \'?\');
-        if (!empty($i[\'numero\'])) $plainBody .= " -- Edital {$i[\'numero\']}";
-        if (!empty($i[\'tipo\']))   $plainBody .= " ({$i[\'tipo\']})";
-        $plainBody .= "\r\n";
-        if (!empty($i[\'prazo_inscricao\'])) $plainBody .= "    prazo: {$i[\'prazo_inscricao\']}\r\n";
-        if (!empty($i[\'link\']))            $plainBody .= "    link.: {$i[\'link\']}\r\n\r\n";
-
-        $htmlCards .= alFormataCardEditalHTML($i);
-    }
-    $plainBody .= str_repeat(\'-\', 50) . "\r\ndetalhes: " . ALERTAS_URL . "\r\n";
-
-    $htmlBody = alEmailCabecalhoHTML("CHAMAMENTOS E EDITAIS PÚBLICOS");
-    $htmlBody .= $htmlCards;
-    $htmlBody .= alEmailRodapeHTML();
-
-    $boundary = "==_BOUNDARY_" . md5(uniqid((string)time(), true));
-    $headers  = "MIME-Version: 1.0\r\n";
-    $headers .= "From: Radar RR <" . ALERTAS_EMAIL_FROM . ">\r\n";
-    $headers .= "Content-Type: multipart/alternative; boundary=\"{$boundary}\"\r\n";
-
-    $message  = "--{$boundary}\r\n";
-    $message .= "Content-Type: text/plain; charset=UTF-8\r\n";
-    $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $message .= $plainBody . "\r\n\r\n";
-
-    $message .= "--{$boundary}\r\n";
-    $message .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $message .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
-    $message .= $htmlBody . "\r\n\r\n";
-    $message .= "--{$boundary}--\r\n";
-
-    @mail(ALERTAS_EMAIL_DESTINO, $subject, $message, $headers);
-}';
-
-    $libPhp = preg_replace('/function alNotificar\(\$itens, \$novos, \$rev\)\s*\{.*?\n\}/s', $novaNotificarEditais, $libPhp);
-    file_put_contents($alertasDir . '/lib.php', $libPhp);
-
-    // 4. Atualiza os arquivos offline.html (raiz e colecao) se offline.html existir no deploy
+    // 5. Atualiza offline.html se existir
     if (file_exists($v2Dir . '/offline.html')) {
         $offlineContent = file_get_contents($v2Dir . '/offline.html');
-        $publicHtml = dirname($alertasDir); // /home/u145126467/domains/maycosantos.lel.br/public_html
-        
         file_put_contents($publicHtml . '/offline.html', $offlineContent);
         if (is_dir($publicHtml . '/colecao')) {
             file_put_contents($publicHtml . '/colecao/offline.html', $offlineContent);
         }
+        if (is_dir($radarDir)) {
+            file_put_contents($radarDir . '/offline.html', $offlineContent);
+        }
     }
 
-    echo "EMAILS_AND_OFFLINE_UPGRADED";
+    echo "RADAR_MIGRATION_COMPLETED_SUCCESSFULLY";
     exit;
 }
 echo "ACCESS_DENIED";
