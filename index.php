@@ -514,11 +514,8 @@ select option{background:var(--materia);color:#fff}
 .bloco:hover{transform:translateY(-6px);border-color:rgba(255,107,0,0.55);box-shadow:var(--brilho-bloco)}
 .bloco::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.15),rgba(255,107,0,0.1),transparent 70%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
 .vidro{background:rgba(11,15,25,.75);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.1);border-radius:var(--r-2xl);box-shadow:var(--elevacao)}
-/* cantoneiras laranja: "no selecionado" */
-.cantos::before,.cantos::after{content:"";position:absolute;width:22px;height:22px;pointer-events:none;transition:width .3s,height .3s}
-.cantos::before{top:-1px;left:-1px;border-top:2px solid var(--laranja);border-left:2px solid var(--laranja);border-top-left-radius:var(--r-2xl)}
-.cantos::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--laranja);border-right:2px solid var(--laranja);border-bottom-right-radius:var(--r-2xl)}
-.cantos:hover::before,.cantos:hover::after{width:44px;height:44px}
+/* cantoneiras sutis em estilo HUD espacial */
+.cantos::before,.cantos::after{display:none}
 
 /* ---------- topo ---------- */
 .topo{position:sticky;top:0;z-index:50;background:rgba(7,9,14,0.8);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);box-shadow:0 10px 30px rgba(0,0,0,0.4)}
