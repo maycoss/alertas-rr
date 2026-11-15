@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/mapa_rr.php';
 
@@ -12,11 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id     = (int)($_POST['id'] ?? 0);
 
     if ($acao === 'login') {
-        if (alLogin($_POST['senha'] ?? '')) { $msg = 'Bem-vindo de volta Ã  sala do operador.'; }
+        if (alLogin($_POST['senha'] ?? '')) { $msg = 'Bem-vindo de volta à sala do operador.'; }
         else { $erro = 'Senha incorreta.'; }
         $ancora = 'painel';
     }
-    if ($acao === 'logout') { alLogout(); $msg = 'SessÃ£o encerrada.'; }
+    if ($acao === 'logout') { alLogout(); $msg = 'Sessão encerrada.'; }
 
     if ($is_admin && $acao === 'salvar_radar') {
         $cats = array_values(array_intersect(array_keys(alLotesCategorias()), (array)($_POST['cat'] ?? [])));
@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($is_admin && $acao === 'varrer_lotes') {
         $r = alVarrerLotes();
         $msg = "Lotes conferidos: {$r['rr']} relidos, {$r['novos']} novo(s), " . count($r['avisar']) . ' na mira.'
-             . ($r['parciais'] ? ' ' . implode(' Â· ', $r['parciais']) . '.' : '');
-        if ($r['erros']) $erro = implode(' Â· ', $r['erros']);
+             . ($r['parciais'] ? ' ' . implode(' · ', $r['parciais']) . '.' : '');
+        if ($r['erros']) $erro = implode(' · ', $r['erros']);
         $ancora = 'lotes';
     }
 
@@ -41,14 +41,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($is_admin && $acao === 'verificar_fontes') {
         $r = alVerificarFontes();
         $msg = $r['novos'] . ' edital(is) novo(s) nas fontes oficiais.';
-        if ($r['erros']) $erro = implode(' Â· ', $r['erros']);
+        if ($r['erros']) $erro = implode(' · ', $r['erros']);
         $ancora = 'editais';
     }
 
     if ($is_admin && $acao === 'verificar_agora') {
         try {
             $r = alVerificar();
-            if (($r['status'] ?? '') === 'inativo') $erro = 'Monitor desativado â€” ative na configuraÃ§Ã£o.';
+            if (($r['status'] ?? '') === 'inativo') $erro = 'Monitor desativado — ative na configuração.';
             else $msg = "Busca completa: {$r['novos']} novo(s), {$r['revisao']} para conferir.";
         } catch (Exception $e) {
             $erro = 'Erro: ' . $e->getMessage();
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         alSetCfg('modelo', trim($_POST['modelo'] ?? 'claude-sonnet-4-6'));
         alSetCfg('ativo', !empty($_POST['ativo']) ? '1' : '0');
         alSetCfg('email_notif', !empty($_POST['email_notif']) ? '1' : '0');
-        $msg = 'ConfiguraÃ§Ã£o gravada.';
+        $msg = 'Configuração gravada.';
         $ancora = 'painel';
     }
 
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($is_admin && $acao === 'restaurar' && $id) {
         alDb()->prepare("UPDATE editais SET oculto=0 WHERE id=?")->execute([$id]);
-        $msg = 'Edital de volta Ã  lista.'; $ancora = 'editais';
+        $msg = 'Edital de volta à lista.'; $ancora = 'editais';
     }
     if ($is_admin && $acao === 'confirmar' && $id) {
         alDb()->prepare("UPDATE editais SET categoria='confirmado', motivo_revisao='' WHERE id=?")->execute([$id]);
@@ -104,7 +104,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
 /*
  * O PNCP manda o orgao em CAIXA ALTA e repetido:
- * "TRIBUNAL DE JUSTICA DO ESTADO DE RORAIMA - Boa Vista/RR (TRIBUNAL DE JUSTIÃ‡A DO ESTADO DE RORAIMA)".
+ * "TRIBUNAL DE JUSTICA DO ESTADO DE RORAIMA - Boa Vista/RR (TRIBUNAL DE JUSTIÇA DO ESTADO DE RORAIMA)".
  * Fica o nome da unidade (que vem com acento), sem repetir a cidade, em caixa normal.
  */
 function alNomeOrgao($s) {
@@ -115,11 +115,11 @@ function alNomeOrgao($s) {
         $b   = alNormTxt(preg_replace('~\s*-\s*RR$~iu', '', $m[3]));
         $cid = alNormTxt(str_replace('/RR', '', $m[2]));
         if ($a === $b || strpos($b, $a) !== false || strpos($b, $cid) !== false) $s = preg_replace('~\s*-\s*RR$~iu', '', $m[3]);
-        else $s = $m[1] . ' Â· ' . $m[3];
+        else $s = $m[1] . ' · ' . $m[3];
         if (strpos(alNormTxt($s), $cid) === false) $cidade = $m[2];
     }
     if (mb_strtoupper($s, 'UTF-8') === $s) $s = alTitulo($s);
-    return $s . ($cidade ? ' â€” ' . $cidade : '');
+    return $s . ($cidade ? ' — ' . $cidade : '');
 }
 
 function alTitulo($s) {
@@ -139,8 +139,8 @@ function alTitulo($s) {
 function alMesCurto($n) { return ['', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'][(int)$n]; }
 
 function alDataLonga($ts) {
-    $sem = ['domingo', 'segunda-feira', 'terÃ§a-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sÃ¡bado'];
-    $mes = ['', 'janeiro', 'fevereiro', 'marÃ§o', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    $sem = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+    $mes = ['', 'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
     return $sem[(int)date('w', $ts)] . ', ' . (int)date('j', $ts) . ' de ' . $mes[(int)date('n', $ts)] . ' de ' . date('Y', $ts);
 }
 
@@ -160,21 +160,21 @@ function alDias($dt) {
 function alQuando($dt) {
     if (!$dt) return '';
     $d = alDias($dt);
-    if ($d < -1) return 'hÃ¡ ' . (-$d) . ' dias';
+    if ($d < -1) return 'há ' . (-$d) . ' dias';
     if ($d === -1) return 'ontem';
     if ($d === 0) return 'hoje';
-    if ($d === 1) return 'amanhÃ£';
+    if ($d === 1) return 'amanhã';
     return 'em ' . $d . ' dias';
 }
 
 function alRelativo($dt) {
     if (!$dt) return 'nunca';
     $s = time() - strtotime($dt);
-    if ($s < 90) return 'agora hÃ¡ pouco';
-    if ($s < 3600) return 'hÃ¡ ' . round($s / 60) . ' min';
-    if ($s < 86400) return 'hÃ¡ ' . round($s / 3600) . ' h';
+    if ($s < 90) return 'agora há pouco';
+    if ($s < 3600) return 'há ' . round($s / 60) . ' min';
+    if ($s < 86400) return 'há ' . round($s / 3600) . ' h';
     $d = (int)floor($s / 86400);
-    return $d === 1 ? 'ontem' : 'hÃ¡ ' . $d . ' dias';
+    return $d === 1 ? 'ontem' : 'há ' . $d . ' dias';
 }
 
 // Desenhos de linha (placeholder do lote sem foto, chips, pino)
@@ -227,36 +227,36 @@ function alCardLote(array $l, $admin) {
     <span class="selos">
       <?php if ($urg): ?><span class="selo selo-brasa"><i class="ping"></i>Encerra <?= e(alQuando($l['data_leilao'])) ?></span>
       <?php elseif ($novo): ?><span class="selo"><i class="ping"></i>Novo</span><?php endif; ?>
-      <?php if ($desc >= 5): ?><span class="selo selo-ouro">âˆ’<?= $desc ?>%</span><?php endif; ?>
+      <?php if ($desc >= 5): ?><span class="selo selo-ouro">−<?= $desc ?>%</span><?php endif; ?>
     </span>
   </a>
   <span class="marca-dagua" aria-hidden="true"><?= alIcone($cat) ?></span>
   <div class="lote-corpo">
     <p class="lote-topo"><span class="lote-cat"><?= e(alLoteCatNome($cat)) ?></span><?php if ($l['numero'] !== ''): ?><span>Lote #<?= e($l['numero']) ?></span><?php endif; ?></p>
-    <?php if ($l['termo']): ?><p class="vigiado"><i class="ping ping-ouro"></i>Vigiado Â· <?= e($l['termo']) ?></p><?php endif; ?>
+    <?php if ($l['termo']): ?><p class="vigiado"><i class="ping ping-ouro"></i>Vigiado · <?= e($l['termo']) ?></p><?php endif; ?>
     <h3 class="lote-tit"><a href="<?= e($l['link']) ?>" target="_blank" rel="noopener"><?= e($l['titulo']) ?></a></h3>
     <p class="lote-onde"><?= alIcone('pino') ?><span><?= e($onde) ?></span><?php if (!empty($l['lat']) && in_array($cat, alLotesFamiliaImovel(), true)): ?><a class="ver-mapa" href="#mapa" data-pino="<?= (int)$l['id'] ?>">no mapa</a><?php endif; ?></p>
     <?php if ($l['valor_avaliacao'] > 0 || $l['valor_lance'] > 0): ?>
     <dl class="lote-valores">
-      <?php if ($l['valor_avaliacao'] > 0): ?><div><dt>AvaliaÃ§Ã£o</dt><dd><?= e(alBRL($l['valor_avaliacao'])) ?></dd></div><?php endif; ?>
+      <?php if ($l['valor_avaliacao'] > 0): ?><div><dt>Avaliação</dt><dd><?= e(alBRL($l['valor_avaliacao'])) ?></dd></div><?php endif; ?>
       <?php if ($l['valor_lance'] > 0): ?><div><dt><?= e($l['valor_rotulo']) ?></dt><dd class="forte"><?= e(alBRL($l['valor_lance'])) ?></dd></div><?php endif; ?>
     </dl>
     <?php endif; ?>
     <?php if ($pracas): ?>
-    <ul class="pracas" aria-label="PraÃ§as">
+    <ul class="pracas" aria-label="Praças">
       <?php foreach ($pracas as $pr): ?>
-      <li><span><?= e($pr['rotulo']) ?></span><span><?= $pr['data'] ? e(alDataCurta($pr['data'])) : 'â€”' ?></span><span><?= e(alBRL($pr['valor'])) ?></span></li>
+      <li><span><?= e($pr['rotulo']) ?></span><span><?= $pr['data'] ? e(alDataCurta($pr['data'])) : '—' ?></span><span><?= e(alBRL($pr['valor'])) ?></span></li>
       <?php endforeach; ?>
     </ul>
     <?php endif; ?>
-    <?php if ($info): ?><p class="lote-info"><?= e(implode(' Â· ', $info)) ?></p><?php endif; ?>
+    <?php if ($info): ?><p class="lote-info"><?= e(implode(' · ', $info)) ?></p><?php endif; ?>
     <p class="lote-quando<?= $urg ? ' urgente' : '' ?>">
-      <?php if ($l['data_leilao'] && $dias >= 0): ?>Encerra <?= e(alDataCurta($l['data_leilao'])) ?> Â· <strong><?= e(alQuando($l['data_leilao'])) ?></strong>
-      <?php elseif ($l['data_leilao']): ?>Data informada: <?= e(alDataCurta($l['data_leilao'])) ?> (<?= e(alQuando($l['data_leilao'])) ?>) Â· ainda aberto na fonte
-      <?php elseif (in_array($l['fonte'], ['spy', 'garimpia'], true)): ?>Sem data marcada Â· venda direta ou proposta
-      <?php else: ?>Data nÃ£o informada<?php endif; ?>
+      <?php if ($l['data_leilao'] && $dias >= 0): ?>Encerra <?= e(alDataCurta($l['data_leilao'])) ?> · <strong><?= e(alQuando($l['data_leilao'])) ?></strong>
+      <?php elseif ($l['data_leilao']): ?>Data informada: <?= e(alDataCurta($l['data_leilao'])) ?> (<?= e(alQuando($l['data_leilao'])) ?>) · ainda aberto na fonte
+      <?php elseif (in_array($l['fonte'], ['spy', 'garimpia'], true)): ?>Sem data marcada · venda direta ou proposta
+      <?php else: ?>Data não informada<?php endif; ?>
     </p>
-    <p class="lote-fonte"><?= e(alLotesFontes()[$l['fonte']] ?? $l['fonte']) ?><?= $l['comitente'] ? ' Â· ' . e($l['comitente']) : '' ?></p>
+    <p class="lote-fonte"><?= e(alLotesFontes()[$l['fonte']] ?? $l['fonte']) ?><?= $l['comitente'] ? ' · ' . e($l['comitente']) : '' ?></p>
     <?php if ($admin): ?>
     <form method="post" class="lote-tirar" onsubmit="return confirm('Tirar este lote da lista?')">
       <input type="hidden" name="acao" value="ocultar_lote"><input type="hidden" name="id" value="<?= (int)$l['id'] ?>">
@@ -274,10 +274,10 @@ function alPopupLote(array $l) {
     $desc = ($l['valor_avaliacao'] > 0 && $l['valor_lance'] > 0 && $l['valor_lance'] < $l['valor_avaliacao'])
           ? (int)round((1 - $l['valor_lance'] / $l['valor_avaliacao']) * 100) : 0;
     $dias = $l['data_leilao'] ? alDias($l['data_leilao']) : null;
-    if ($l['data_leilao'] && $dias >= 0)                     $quando = 'Encerra ' . alDataCurta($l['data_leilao']) . ' Â· ' . alQuando($l['data_leilao']);
-    elseif ($l['data_leilao'])                               $quando = 'Data informada: ' . alDataCurta($l['data_leilao']) . ' Â· ainda aberto na fonte';
-    elseif (in_array($l['fonte'], ['spy', 'garimpia'], true)) $quando = 'Sem data marcada Â· venda direta ou proposta';
-    else                                                     $quando = 'Data nÃ£o informada';
+    if ($l['data_leilao'] && $dias >= 0)                     $quando = 'Encerra ' . alDataCurta($l['data_leilao']) . ' · ' . alQuando($l['data_leilao']);
+    elseif ($l['data_leilao'])                               $quando = 'Data informada: ' . alDataCurta($l['data_leilao']) . ' · ainda aberto na fonte';
+    elseif (in_array($l['fonte'], ['spy', 'garimpia'], true)) $quando = 'Sem data marcada · venda direta ou proposta';
+    else                                                     $quando = 'Data não informada';
     $end = alLoteEndereco($l);
     $cidade = trim(($end['bairro'] !== '' ? $end['bairro'] . ', ' : '') . ($l['municipio'] ?: 'Roraima'));
     $rua = $l['geo'] === 'endereco' ? $end['rua'] : '';
@@ -285,18 +285,18 @@ function alPopupLote(array $l) {
 <div class="pop">
   <?php if (strpos((string)$l['foto'], 'http') === 0): ?><img class="pop-foto" src="<?= e($l['foto']) ?>" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"><?php endif; ?>
   <div class="pop-corpo">
-    <p class="pop-cat"><?= e(alLoteCatNome($l['categoria'])) ?><?= $desc >= 5 ? ' Â· âˆ’' . $desc . '%' : '' ?><?= $l['termo'] ? ' Â· vigiado' : '' ?></p>
+    <p class="pop-cat"><?= e(alLoteCatNome($l['categoria'])) ?><?= $desc >= 5 ? ' · −' . $desc . '%' : '' ?><?= $l['termo'] ? ' · vigiado' : '' ?></p>
     <p class="pop-tit"><a href="<?= e($l['link']) ?>" target="_blank" rel="noopener"><?= e($l['titulo']) ?></a></p>
     <?php if ($l['valor_avaliacao'] > 0 || $l['valor_lance'] > 0): ?>
     <dl class="pop-val">
-      <?php if ($l['valor_avaliacao'] > 0): ?><div><dt>AvaliaÃ§Ã£o</dt><dd><?= e(alBRL($l['valor_avaliacao'])) ?></dd></div><?php endif; ?>
+      <?php if ($l['valor_avaliacao'] > 0): ?><div><dt>Avaliação</dt><dd><?= e(alBRL($l['valor_avaliacao'])) ?></dd></div><?php endif; ?>
       <?php if ($l['valor_lance'] > 0): ?><div><dt><?= e($l['valor_rotulo']) ?></dt><dd class="forte"><?= e(alBRL($l['valor_lance'])) ?></dd></div><?php endif; ?>
     </dl>
     <?php endif; ?>
     <p class="pop-quando"><?= e($quando) ?></p>
-    <p class="pop-onde"><?php if ($rua !== ''): ?><b><?= e($rua) ?></b> Â· <?= e($cidade) ?><?php else: ?><b>local aproximado</b> Â· <?= e($l['geo'] === 'bairro' ? $cidade : ($l['municipio'] ?: 'Roraima')) ?><?php endif; ?></p>
-    <p class="pop-fonte"><?= e(alLotesFontes()[$l['fonte']] ?? $l['fonte']) ?><?= $l['comitente'] ? ' Â· ' . e($l['comitente']) : '' ?></p>
-    <a class="btn-link" href="<?= e($l['link']) ?>" target="_blank" rel="noopener">Abrir no leiloeiro â†—</a>
+    <p class="pop-onde"><?php if ($rua !== ''): ?><b><?= e($rua) ?></b> · <?= e($cidade) ?><?php else: ?><b>local aproximado</b> · <?= e($l['geo'] === 'bairro' ? $cidade : ($l['municipio'] ?: 'Roraima')) ?><?php endif; ?></p>
+    <p class="pop-fonte"><?= e(alLotesFontes()[$l['fonte']] ?? $l['fonte']) ?><?= $l['comitente'] ? ' · ' . e($l['comitente']) : '' ?></p>
+    <a class="btn-link" href="<?= e($l['link']) ?>" target="_blank" rel="noopener">Abrir no leiloeiro ↗</a>
   </div>
 </div>
 <?php
@@ -344,8 +344,8 @@ foreach (array_keys($cats) as $k) {
     $conta_cat[$k] = count(array_filter($lotes, function ($l) use ($k) { return alLoteNaSelecao($l['categoria'], [$k]); }));
 }
 $conta_outros = [];
-$plural = ['apartamento' => 'apartamentos', 'casa' => 'casas', 'terreno' => 'terrenos', 'predio' => 'prÃ©dios/galpÃµes',
-           'imovel' => 'imÃ³veis', 'veiculo' => 'veÃ­culos', 'outro' => 'outros bens'];
+$plural = ['apartamento' => 'apartamentos', 'casa' => 'casas', 'terreno' => 'terrenos', 'predio' => 'prédios/galpões',
+           'imovel' => 'imóveis', 'veiculo' => 'veículos', 'outro' => 'outros bens'];
 foreach ($outros as $l) { $conta_outros[$l['categoria']] = ($conta_outros[$l['categoria']] ?? 0) + 1; }
 arsort($conta_outros);
 $resumo_outros = [];
@@ -382,13 +382,13 @@ $tem_chave   = $provedor === 'claude' ? $tem_key : $tem_key_gem;
 
 $sel_nomes = array_map(function ($k) use ($cats) { return mb_strtolower($cats[$k], 'UTF-8'); }, $sel);
 $frase_mira = $sel_nomes ? implode(', ', $sel_nomes) : 'nenhuma categoria marcada';
-if ($termos) $frase_mira .= ' Â· e o que citar ' . implode(', ', array_map(function ($t) { return 'â€œ' . $t . 'â€'; }, $termos));
+if ($termos) $frase_mira .= ' · e o que citar ' . implode(', ', array_map(function ($t) { return '“' . $t . 'â€'; }, $termos));
 $termos_achados = array_values(array_unique(array_filter(array_column($mira, 'termo'))));
 $termos_sem = array_values(array_diff($termos, $termos_achados));
 
-$rotulos_curtos = ['SÃ£o JoÃ£o da Baliza' => 'SJ Baliza', 'SÃ£o Luiz do AnauÃ¡' => 'S. Luiz'];
-$rotulos_desloc = ['SÃ£o JoÃ£o da Baliza' => [2, 24], 'SÃ£o Luiz do AnauÃ¡' => [-16, -6], 'Caroebe' => [4, -18],
-                   'UiramutÃ£' => [0, 6], 'Normandia' => [6, 0], 'Boa Vista' => [-4, 0]];
+$rotulos_curtos = ['São João da Baliza' => 'SJ Baliza', 'São Luiz do Anauá' => 'S. Luiz'];
+$rotulos_desloc = ['São João da Baliza' => [2, 24], 'São Luiz do Anauá' => [-16, -6], 'Caroebe' => [4, -18],
+                   'Uiramutã' => [0, 6], 'Normandia' => [6, 0], 'Boa Vista' => [-4, 0]];
 
 // Faixa de fontes (ticker): ponto aceso = conferida dentro do ciclo esperado.
 $fita = [];
@@ -402,8 +402,8 @@ $hoje_curto = (int)date('j') . ' ' . alMesCurto(date('n')) . ' ' . date('Y');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Alertas RR Â· Roraima em leilÃ£o</title>
-<meta name="description" content="Lotes de leilÃ£o em Roraima (imÃ³veis e veÃ­culos do TJRR, TRF1, Caixa, bancos e leiloeiros locais) e editais de credenciamento de leiloeiros oficiais em RR.">
+<title>Radar RR · Monitor de Leilões em Roraima</title>
+<meta name="description" content="Lotes de leilão em Roraima (imóveis e veículos do TJRR, TRF1, Caixa, bancos e leiloeiros locais) e editais de credenciamento de leiloeiros oficiais em RR.">
 <meta name="robots" content="index,follow">
 <meta name="theme-color" content="#030304">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1'%3E%3Cstop stop-color='%23EA580C'/%3E%3Cstop offset='1' stop-color='%23F7931A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23030304'/%3E%3Cpath d='m30 12 14 14-6 6-14-14zM37 29 20 46M14 54h24' stroke='url(%23g)' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -415,7 +415,7 @@ $hoje_curto = (int)date('j') . ' ' . alMesCurto(date('n')) . ' ' . date('Y');
 <?php endif; ?>
 <style>
 /* =====================================================================
-   TOKENS â€” "Bitcoin DeFi": vazio verdadeiro + energia laranja/ouro.
+   TOKENS — "Bitcoin DeFi": vazio verdadeiro + energia laranja/ouro.
    Tudo o que tem cor, raio, brilho ou fonte sai daqui.
    ===================================================================== */
 :root{
@@ -870,13 +870,13 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
 <header class="topo">
   <div class="dentro">
     <a class="marca" href="./"><span class="marca-no"><?= alIcone('outro') ?></span><span>Alertas <span class="grad-texto">RR</span></span></a>
-    <nav class="topo-nav" aria-label="SeÃ§Ãµes">
+    <nav class="topo-nav" aria-label="Seções">
       <a href="#lotes">Lotes</a>
       <?php if ($pinos): ?><a href="#mapa">Mapa</a><?php endif; ?>
       <a href="#editais">Editais</a>
       <a href="#painel" class="essencial"><?= $is_admin ? 'Operador â—' : 'Operador' ?></a>
     </nav>
-    <span class="vivo" title="Ãšltima conferÃªncia dos lotes: <?= e(alRelativo(alCfg('lotes_ultima'))) ?>"><i class="ping ping-ouro"></i><span>Radar ativo</span></span>
+    <span class="vivo" title="Última conferência dos lotes: <?= e(alRelativo(alCfg('lotes_ultima'))) ?>"><i class="ping ping-ouro"></i><span>Radar ativo</span></span>
   </div>
 </header>
 
@@ -890,9 +890,9 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
   <div class="nebulosa n2" aria-hidden="true"></div>
   <div class="dentro capa-in">
     <div>
-      <p class="cracha"><i class="ping"></i>EdiÃ§Ã£o nÂº <?= $edicao ?> Â· <?= e($hoje_curto) ?></p>
-      <h1>Roraima <span class="grad-texto">em leilÃ£o.</span></h1>
-      <p class="lead">Lotes de imÃ³veis e veÃ­culos e editais de credenciamento de leiloeiro, colhidos todo dia nas fontes oficiais e nos leiloeiros que atuam no estado. Ã‰ por eles que o <b>TJRR</b>, o <b>TRF1</b>, a <b>Caixa</b> e os bancos vendem o que vai a leilÃ£o aqui.</p>
+      <p class="cracha"><i class="ping"></i>Edição nº <?= $edicao ?> · <?= e($hoje_curto) ?></p>
+      <h1>Radar <span class="grad-texto">de Oportunidades.</span></h1>
+      <p class="lead">Lotes de imóveis e veículos e editais de credenciamento de leiloeiro, colhidos todo dia nas fontes oficiais e nos leiloeiros que atuam no estado. É por eles que o <b>TJRR</b>, o <b>TRF1</b>, a <b>Caixa</b> e os bancos vendem o que vai a leilão aqui.</p>
 
       <form method="post" class="mira" id="mira">
         <input type="hidden" name="acao" value="salvar_radar">
@@ -906,14 +906,14 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
           <?php endforeach; ?>
         </fieldset>
         <div class="mira-termos">
-          <label class="rotulo" for="termos">Vigiar tambÃ©m Â· bairro, condomÃ­nio, rua</label>
+          <label class="rotulo" for="termos">Vigiar também · bairro, condomínio, rua</label>
           <div class="campo-linha">
             <input type="text" id="termos" name="termos" value="<?= e(implode(', ', $termos)) ?>" placeholder="ex.: Monte Cristo, Cond. Buriti"<?= $is_admin ? '' : ' disabled' ?>>
             <?php if ($is_admin): ?><button type="submit" class="btn">Salvar</button><?php endif; ?>
           </div>
           <p class="nota"><?= $is_admin
-              ? 'Separe por vÃ­rgula. Lote que citar um desses termos sobe para o topo e vai para o seu e-mail, seja qual for a categoria. As caixinhas salvam sozinhas.'
-              : 'Para mudar a mira, entre na sala do operador, no fim da pÃ¡gina.' ?></p>
+              ? 'Separe por vírgula. Lote que citar um desses termos sobe para o topo e vai para o seu e-mail, seja qual for a categoria. As caixinhas salvam sozinhas.'
+              : 'Para mudar a mira, entre na sala do operador, no fim da página.' ?></p>
         </div>
       </form>
     </div>
@@ -924,7 +924,7 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
         <div class="orbita orbita-1" aria-hidden="true"></div>
         <div class="orbita orbita-2" aria-hidden="true"></div>
         <div class="mapa-flutua">
-          <svg viewBox="-12 -12 <?= $mapa['w'] + 24 ?> <?= $mapa['h'] + 24 ?>" role="group" aria-label="Mapa de Roraima por municÃ­pio">
+          <svg viewBox="-12 -12 <?= $mapa['w'] + 24 ?> <?= $mapa['h'] + 24 ?>" role="group" aria-label="Mapa de Roraima por município">
             <defs>
               <linearGradient id="g-mira" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EA580C"/><stop offset="1" stop-color="#F7931A"/></linearGradient>
               <pattern id="hachura" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -935,7 +935,7 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
             <?php foreach ($mapa['mun'] as $m):
                 $c = $por_mun[$m['nome']];
                 $cls = $c['mira'] ? ' tem-mira' : ($c['lotes'] ? ' tem-lote' : '');
-                $desc = $m['nome'] . ': ' . $c['mira'] . ' na mira, ' . $c['lotes'] . ' lote(s) em leilÃ£o, ' . $c['editais'] . ' edital(is) aberto(s)'; ?>
+                $desc = $m['nome'] . ': ' . $c['mira'] . ' na mira, ' . $c['lotes'] . ' lote(s) em leilão, ' . $c['editais'] . ' edital(is) aberto(s)'; ?>
               <path class="mun<?= $cls ?>" d="<?= $m['d'] ?>" data-mun="<?= e($m['nome']) ?>" tabindex="0" role="button" aria-pressed="false" aria-label="<?= e($desc) ?>"><title><?= e($desc) ?></title></path>
             <?php endforeach; ?>
             </g>
@@ -968,14 +968,14 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
         <span class="leg leg-mira"><i></i>lote na mira</span>
         <span class="leg leg-lote"><i></i>outros lotes</span>
         <span class="leg leg-edital"><i></i>edital aberto</span>
-        <span class="legenda-dica">Toque num municÃ­pio para ver sÃ³ o que estÃ¡ nele.</span>
+        <span class="legenda-dica">Toque num município para ver só o que está nele.</span>
       </figcaption>
     </figure>
   </div>
 </section>
 
 <!-- faixa de fontes -->
-<div class="fita" role="region" aria-label="SituaÃ§Ã£o das fontes">
+<div class="fita" role="region" aria-label="Situação das fontes">
   <div class="fita-trilho">
     <?php for ($v = 0; $v < 2; $v++): ?>
     <div class="fita-grupo"<?= $v ? ' aria-hidden="true"' : '' ?>>
@@ -988,30 +988,30 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
   </div>
 </div>
 
-<div class="filtro" id="filtro" hidden><div class="filtro-in">Mostrando sÃ³ <b></b><button type="button" class="btn" id="filtro-limpar">Ver tudo âœ•</button></div></div>
+<div class="filtro" id="filtro" hidden><div class="filtro-in">Mostrando só <b></b><button type="button" class="btn" id="filtro-limpar">Ver tudo âœ•</button></div></div>
 
 <main>
 <!-- ============ 01 LOTES ============ -->
 <section class="secao" id="lotes">
   <div class="dentro">
     <header class="sec-topo">
-      <p class="sec-kicker">// 01 Â· Radar de lotes</p>
+      <p class="sec-kicker">// 01 · Radar de lotes</p>
       <h2>Na mira</h2>
       <p class="sec-sub"><?= e(ucfirst($frase_mira)) ?></p>
       <span class="sec-conta"><?= count($mira) ?> lote<?= count($mira) === 1 ? '' : 's' ?></span>
     </header>
     <?php if ($termos_sem): ?>
-    <p class="vigia"><i class="ping ping-ouro"></i>Vigiando <b><?= e(implode(', ', $termos_sem)) ?></b> Â· nada nas fontes agora. Quando aparecer, vai para o seu e-mail.</p>
+    <p class="vigia"><i class="ping ping-ouro"></i>Vigiando <b><?= e(implode(', ', $termos_sem)) ?></b> · nada nas fontes agora. Quando aparecer, vai para o seu e-mail.</p>
     <?php endif; ?>
     <?php if ($mira): ?>
     <div class="lotes"><?php foreach ($mira as $l) echo alCardLote($l, $is_admin); ?></div>
-    <p class="filtro-vazio" hidden>â€º nada na mira neste municÃ­pio.</p>
+    <p class="filtro-vazio" hidden>â€º nada na mira neste município.</p>
     <?php else: ?>
     <div class="bloco vazio">
       <span class="no-holo"><?= alIcone($sel[0] ?? 'outro') ?></span>
       <div>
         <p class="vazio-grande">Nada na mira em Roraima neste momento.</p>
-        <p>O radar confere a WR LeilÃµes, o Amazonas LeilÃµes (por onde leiloam o TJRR e o TRF1), o Spy LeilÃµes e o Garimpia (Caixa, bancos e leiloeiros do paÃ­s) a cada execuÃ§Ã£o do cron. Quando aparecer um lote do que estÃ¡ marcado acima, ele entra aqui e chega no seu e-mail.</p>
+        <p>O radar confere a WR Leilões, o Amazonas Leilões (por onde leiloam o TJRR e o TRF1), o Spy Leilões e o Garimpia (Caixa, bancos e leiloeiros do país) a cada execução do cron. Quando aparecer um lote do que está marcado acima, ele entra aqui e chega no seu e-mail.</p>
       </div>
     </div>
     <?php endif; ?>
@@ -1020,10 +1020,10 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
     <details class="outros" id="outros">
       <summary>
         <span class="outros-tit">Outros lotes em Roraima</span>
-        <span class="outros-n"><?= count($outros) ?> fora da mira Â· <?= e(implode(' Â· ', $resumo_outros)) ?></span>
+        <span class="outros-n"><?= count($outros) ?> fora da mira · <?= e(implode(' · ', $resumo_outros)) ?></span>
       </summary>
       <div class="lotes"><?php foreach ($outros as $l) echo alCardLote($l, $is_admin); ?></div>
-      <p class="filtro-vazio" hidden>â€º nenhum outro lote neste municÃ­pio.</p>
+      <p class="filtro-vazio" hidden>â€º nenhum outro lote neste município.</p>
     </details>
     <?php endif; ?>
   </div>
@@ -1036,9 +1036,9 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
 <section class="secao secao-alt" id="mapa">
   <div class="dentro">
     <header class="sec-topo">
-      <p class="sec-kicker">// 02 Â· Mapa dos imÃ³veis</p>
+      <p class="sec-kicker">// 02 · Mapa dos imóveis</p>
       <h2>Onde fica cada um</h2>
-      <p class="sec-sub">Os imÃ³veis do radar no mapa de ruas Â· toque no alfinete para ver valor, data e o link do leiloeiro</p>
+      <p class="sec-sub">Os imóveis do radar no mapa de ruas · toque no alfinete para ver valor, data e o link do leiloeiro</p>
       <span class="sec-conta"><?= count($pinos) ?> no mapa</span>
     </header>
     <div class="mapa-barra">
@@ -1048,12 +1048,12 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
       </div>
       <div class="mapa-leg">
         <span><i class="ml-mira"></i>na mira</span>
-        <span><i class="ml-rua"></i>endereÃ§o achado na rua</span>
+        <span><i class="ml-rua"></i>endereço achado na rua</span>
         <span><i class="ml-aprox"></i>local aproximado</span>
       </div>
     </div>
-    <div class="mapa-ruas" id="mapa-ruas" role="region" aria-label="Mapa de ruas com os imÃ³veis em leilÃ£o em Roraima"></div>
-    <p class="nota" id="mapa-nota"><?= count($pinos) ?> imÃ³ve<?= count($pinos) === 1 ? 'l' : 'is' ?> no mapa Â· <?= $n_rua ?> com o endereÃ§o achado na rua<?= count($pinos) - $n_rua ? ' Â· ' . (count($pinos) - $n_rua) . ' em local aproximado (sÃ³ o bairro ou o municÃ­pio, comum em Ã¡rea rural)' : '' ?>. A posiÃ§Ã£o vem do endereÃ§o anunciado e nÃ£o substitui a matrÃ­cula nem o edital.</p>
+    <div class="mapa-ruas" id="mapa-ruas" role="region" aria-label="Mapa de ruas com os imóveis em leilão em Roraima"></div>
+    <p class="nota" id="mapa-nota"><?= count($pinos) ?> imóve<?= count($pinos) === 1 ? 'l' : 'is' ?> no mapa · <?= $n_rua ?> com o endereço achado na rua<?= count($pinos) - $n_rua ? ' · ' . (count($pinos) - $n_rua) . ' em local aproximado (só o bairro ou o município, comum em área rural)' : '' ?>. A posição vem do endereço anunciado e não substitui a matrícula nem o edital.</p>
   </div>
 </section>
 <?php endif; ?>
@@ -1062,9 +1062,9 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
 <section class="secao<?= $pinos ? '' : ' secao-alt' ?>" id="editais">
   <div class="dentro">
     <header class="sec-topo">
-      <p class="sec-kicker">// <?= $n_ed ?> Â· Credenciamento</p>
+      <p class="sec-kicker">// <?= $n_ed ?> · Credenciamento</p>
       <h2>Editais abertos</h2>
-      <p class="sec-sub">Chamamentos de leiloeiro oficial e leilÃµes da Receita em Roraima Â· sÃ³ o que ainda estÃ¡ no prazo</p>
+      <p class="sec-sub">Chamamentos de leiloeiro oficial e leilões da Receita em Roraima · só o que ainda está no prazo</p>
       <span class="sec-conta"><?= count($abertos) ?> aberto<?= count($abertos) === 1 ? '' : 's' ?></span>
     </header>
 
@@ -1078,9 +1078,9 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
         <span class="no" aria-hidden="true"><?= sprintf('%02d', $n) ?></span>
         <article class="bloco edital cantos">
           <div class="edital-cabeca">
-            <p class="edital-tipo"><?= e($ed['tipo'] ?: 'Edital') ?><?= $ed['retificacao'] ? ' Â· retificaÃ§Ã£o' : '' ?></p>
+            <p class="edital-tipo"><?= e($ed['tipo'] ?: 'Edital') ?><?= $ed['retificacao'] ? ' · retificação' : '' ?></p>
             <?php if ($p): ?>
-            <span class="prazo"><?php if ($urg): ?><i class="ping"></i><?php endif; ?>Prazo <?= e(date('d/m/Y', strtotime($p))) ?> <small>Â· <?= $dias === 0 ? 'vence hoje' : 'faltam ' . $dias . ' dia' . ($dias === 1 ? '' : 's') ?></small></span>
+            <span class="prazo"><?php if ($urg): ?><i class="ping"></i><?php endif; ?>Prazo <?= e(date('d/m/Y', strtotime($p))) ?> <small>· <?= $dias === 0 ? 'vence hoje' : 'faltam ' . $dias . ' dia' . ($dias === 1 ? '' : 's') ?></small></span>
             <?php else: ?>
             <span class="prazo"><small><?= $conferir ? 'a conferir' : 'sem prazo informado' ?></small></span>
             <?php endif; ?>
@@ -1090,15 +1090,15 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
           <?php if ($ed['requisitos']): ?><p class="edital-req"><?= e($ed['requisitos']) ?></p><?php endif; ?>
           <?php if ($conferir && $ed['motivo_revisao']): ?><p class="motivo"><?= e($ed['motivo_revisao']) ?></p><?php endif; ?>
           <div class="edital-meta">
-            <?php if ($ed['link']): ?><a class="btn-link" href="<?= e($ed['link']) ?>" target="_blank" rel="noopener">PublicaÃ§Ã£o â†—</a><?php endif; ?>
-            <?php if ($ed['link_pdf']): ?><a class="btn-link" href="<?= e($ed['link_pdf']) ?>" target="_blank" rel="noopener">Arquivo â†—</a><?php endif; ?>
-            <?php if ($ed['numero']): ?><span>nÂº <?= e($ed['numero']) ?></span><?php endif; ?>
+            <?php if ($ed['link']): ?><a class="btn-link" href="<?= e($ed['link']) ?>" target="_blank" rel="noopener">Publicação ↗</a><?php endif; ?>
+            <?php if ($ed['link_pdf']): ?><a class="btn-link" href="<?= e($ed['link_pdf']) ?>" target="_blank" rel="noopener">Arquivo ↗</a><?php endif; ?>
+            <?php if ($ed['numero']): ?><span>nº <?= e($ed['numero']) ?></span><?php endif; ?>
             <?php if ($ed['data_publicacao'] && strtotime($ed['data_publicacao'])): ?><span>publicado em <?= e(date('d/m/Y', strtotime($ed['data_publicacao']))) ?></span><?php endif; ?>
             <?php if ($is_admin && $conferir): ?>
             <form method="post"><input type="hidden" name="acao" value="confirmar"><input type="hidden" name="id" value="<?= (int)$ed['id'] ?>"><button type="submit" class="btn-link">Confirmar</button></form>
             <?php endif; ?>
             <?php if ($is_admin): ?>
-            <form method="post" onsubmit="return confirm('Arquivar este edital? Ele sai da lista, mas fica guardado â€” nÃ£o volta a alertar.')"><input type="hidden" name="acao" value="arquivar"><input type="hidden" name="id" value="<?= (int)$ed['id'] ?>"><button type="submit" class="btn-link">Arquivar</button></form>
+            <form method="post" onsubmit="return confirm('Arquivar este edital? Ele sai da lista, mas fica guardado — não volta a alertar.')"><input type="hidden" name="acao" value="arquivar"><input type="hidden" name="id" value="<?= (int)$ed['id'] ?>"><button type="submit" class="btn-link">Arquivar</button></form>
             <?php endif; ?>
           </div>
         </article>
@@ -1108,27 +1108,27 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
 
     <?php if ($abertos): ?>
     <ol class="cadeia"><?php foreach ($abertos as $i => $ed) echo $render_aviso($ed, false, $i + 1); ?></ol>
-    <p class="filtro-vazio" hidden>â€º nenhum edital aberto neste municÃ­pio.</p>
+    <p class="filtro-vazio" hidden>â€º nenhum edital aberto neste município.</p>
     <?php else: ?>
-    <div class="bloco vazio"><span class="no-holo"><?= alIcone('outro') ?></span><div><p class="vazio-grande">Nenhum edital de credenciamento aberto em Roraima agora.</p><p>As fontes oficiais (PNCP e Receita) sÃ£o conferidas a cada execuÃ§Ã£o, e a busca na web passa pelo DiÃ¡rio Oficial, Folha BV, prefeituras e tribunais uma vez por semana.</p></div></div>
+    <div class="bloco vazio"><span class="no-holo"><?= alIcone('outro') ?></span><div><p class="vazio-grande">Nenhum edital de credenciamento aberto em Roraima agora.</p><p>As fontes oficiais (PNCP e Receita) são conferidas a cada execução, e a busca na web passa pelo Diário Oficial, Folha BV, prefeituras e tribunais uma vez por semana.</p></div></div>
     <?php endif; ?>
 
     <?php if ($conferir): ?>
-    <p class="sub-cadeia">A conferir Â· <?= count($conferir) ?></p>
+    <p class="sub-cadeia">A conferir · <?= count($conferir) ?></p>
     <ol class="cadeia"><?php foreach ($conferir as $i => $ed) echo $render_aviso($ed, true, count($abertos) + $i + 1); ?></ol>
     <?php endif; ?>
 
     <?php if ($guardados): ?>
     <details class="guardados">
-      <summary>â€º <?= count($guardados) ?> edita<?= count($guardados) === 1 ? 'l' : 'is' ?> com prazo vencido ou arquivado<?= count($guardados) === 1 ? '' : 's' ?> â€” fora da lista, guardado<?= count($guardados) === 1 ? '' : 's' ?> para nÃ£o alertar de novo</summary>
+      <summary>â€º <?= count($guardados) ?> edita<?= count($guardados) === 1 ? 'l' : 'is' ?> com prazo vencido ou arquivado<?= count($guardados) === 1 ? '' : 's' ?> — fora da lista, guardado<?= count($guardados) === 1 ? '' : 's' ?> para não alertar de novo</summary>
       <ul>
         <?php foreach ($guardados as $ed): ?>
         <li>
           <span><?= $ed['prazo_fim'] ? e(date('d/m/Y', strtotime($ed['prazo_fim']))) : 'arquivado' ?></span>
-          <span><?= e(alNomeOrgao($ed['orgao'])) ?> â€” <?= e($ed['tipo']) ?></span>
+          <span><?= e(alNomeOrgao($ed['orgao'])) ?> — <?= e($ed['tipo']) ?></span>
           <?php if ($is_admin && !empty($ed['oculto'])): ?>
           <form method="post"><input type="hidden" name="acao" value="restaurar"><input type="hidden" name="id" value="<?= (int)$ed['id'] ?>"><button type="submit" class="btn-link">Restaurar</button></form>
-          <?php elseif ($ed['link']): ?><a class="btn-link" href="<?= e($ed['link']) ?>" target="_blank" rel="noopener">ver â†—</a><?php else: ?><span></span><?php endif; ?>
+          <?php elseif ($ed['link']): ?><a class="btn-link" href="<?= e($ed['link']) ?>" target="_blank" rel="noopener">ver ↗</a><?php else: ?><span></span><?php endif; ?>
         </li>
         <?php endforeach; ?>
       </ul>
@@ -1143,9 +1143,9 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
   <div class="nebulosa n1" aria-hidden="true"></div>
   <div class="dentro">
     <header class="sec-topo">
-      <p class="sec-kicker">// <?= $n_op ?> Â· Acesso restrito</p>
+      <p class="sec-kicker">// <?= $n_op ?> · Acesso restrito</p>
       <h2>Sala do operador</h2>
-      <p class="sec-sub"><?= $is_admin ? 'ConfiguraÃ§Ã£o, varreduras manuais e o registro das Ãºltimas execuÃ§Ãµes' : 'Entre para mudar a mira, varrer na hora e configurar a busca' ?></p>
+      <p class="sec-sub"><?= $is_admin ? 'Configuração, varreduras manuais e o registro das últimas execuções' : 'Entre para mudar a mira, varrer na hora e configurar a busca' ?></p>
     </header>
 
     <div class="vidro painel-vidro cantos">
@@ -1161,11 +1161,11 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
     <?php else: ?>
       <div class="painel-grade">
         <div>
-          <h3>SituaÃ§Ã£o</h3>
+          <h3>Situação</h3>
           <dl class="situacao">
             <dt>Monitor</dt><dd class="<?= $ativo ? 'ok' : 'ruim' ?>"><i class="ping<?= $ativo ? ' ping-ouro' : ' ping-apagado' ?>"></i><?= $ativo ? 'ativo' : 'desativado' ?></dd>
-            <dt>Busca na web</dt><dd class="<?= $tem_chave ? 'ok' : 'ruim' ?>"><?= $provedor === 'claude' ? 'Claude' : 'Gemini' ?> Â· <?= $tem_chave ? 'chave gravada' : 'sem chave â€” a busca com IA nÃ£o roda' ?></dd>
-            <dt>Ãšltima busca IA</dt><dd><?= alCfg('ultima_verificacao') ? e(date('d/m/Y H:i', strtotime(alCfg('ultima_verificacao')))) : 'nunca' ?></dd>
+            <dt>Busca na web</dt><dd class="<?= $tem_chave ? 'ok' : 'ruim' ?>"><?= $provedor === 'claude' ? 'Claude' : 'Gemini' ?> · <?= $tem_chave ? 'chave gravada' : 'sem chave — a busca com IA não roda' ?></dd>
+            <dt>Última busca IA</dt><dd><?= alCfg('ultima_verificacao') ? e(date('d/m/Y H:i', strtotime(alCfg('ultima_verificacao')))) : 'nunca' ?></dd>
             <?php foreach (alLotesFontes() as $f => $nome): ?>
             <dt><?= e($nome) ?></dt><dd><?= e(alRelativo(alCfg('lotes_ok_' . $f))) ?></dd>
             <?php endforeach; ?>
@@ -1176,30 +1176,30 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
             <form method="post" class="acao" data-espera="Lendo as fontesâ€¦">
               <input type="hidden" name="acao" value="varrer_lotes">
               <button type="submit" class="btn">Conferir lotes</button>
-              <p>WR, Amazonas, Spy, Garimpia e Receita Â· sem IA, sem custo, atÃ© ~45 s. O que nÃ£o couber, o cron completa.</p>
+              <p>WR, Amazonas, Spy, Garimpia e Receita · sem IA, sem custo, até ~45 s. O que não couber, o cron completa.</p>
             </form>
             <form method="post" class="acao" data-espera="Consultando PNCP e Receitaâ€¦">
               <input type="hidden" name="acao" value="verificar_fontes">
               <button type="submit" class="btn btn-contorno">Fontes oficiais</button>
-              <p>PNCP e Receita/SLE Â· sem IA, sem custo, ~30 s.</p>
+              <p>PNCP e Receita/SLE · sem IA, sem custo, ~30 s.</p>
             </form>
             <form method="post" class="acao" data-espera="Buscandoâ€¦ pode dar 504">
               <input type="hidden" name="acao" value="verificar_agora">
               <button type="submit" class="btn btn-contorno">Busca completa com IA</button>
-              <p>Inclui a busca na web do modelo. Costuma passar de 60 s e o servidor corta com 504 â€” o que jÃ¡ foi gravado fica. O caminho normal dela Ã© o cron.</p>
+              <p>Inclui a busca na web do modelo. Costuma passar de 60 s e o servidor corta com 504 — o que já foi gravado fica. O caminho normal dela é o cron.</p>
             </form>
           </div>
 
           <h3>Registro</h3>
           <ol class="registro">
             <?php foreach ($logs as $lg): ?>
-            <li><time><?= e(date('d/m H:i', strtotime($lg['executado_em'] . ' UTC'))) ?></time><span class="<?= $lg['status'] === 'ok' ? '' : 'erro-l' ?>"><?= e($lg['mensagem']) ?><?= (int)$lg['encontrados'] && strpos($lg['mensagem'], 'Lotes RR') !== 0 ? ' Â· ' . (int)$lg['encontrados'] . ' novo(s)' : '' ?><?= (int)$lg['revisao'] ? ' Â· ' . (int)$lg['revisao'] . ' a conferir' : '' ?></span></li>
+            <li><time><?= e(date('d/m H:i', strtotime($lg['executado_em'] . ' UTC'))) ?></time><span class="<?= $lg['status'] === 'ok' ? '' : 'erro-l' ?>"><?= e($lg['mensagem']) ?><?= (int)$lg['encontrados'] && strpos($lg['mensagem'], 'Lotes RR') !== 0 ? ' · ' . (int)$lg['encontrados'] . ' novo(s)' : '' ?><?= (int)$lg['revisao'] ? ' · ' . (int)$lg['revisao'] . ' a conferir' : '' ?></span></li>
             <?php endforeach; ?>
           </ol>
         </div>
 
         <div>
-          <h3>ConfiguraÃ§Ã£o</h3>
+          <h3>Configuração</h3>
           <form method="post">
             <input type="hidden" name="acao" value="salvar_config">
             <div class="campo">
@@ -1211,32 +1211,32 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
             </div>
             <div class="campo">
               <label class="rotulo" for="apikey_gem">Chave da API Gemini</label>
-              <div class="pw-wrap"><input type="password" id="apikey_gem" name="gemini_api_key" autocomplete="off" placeholder="<?= $tem_key_gem ? 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢ gravada â€” preencha sÃ³ para trocar' : 'AIzaâ€¦ ou AQâ€¦' ?>"><?= alOlho() ?></div>
+              <div class="pw-wrap"><input type="password" id="apikey_gem" name="gemini_api_key" autocomplete="off" placeholder="<?= $tem_key_gem ? '•••••••• gravada — preencha só para trocar' : 'AIzaâ€¦ ou AQâ€¦' ?>"><?= alOlho() ?></div>
             </div>
             <div class="campo">
               <label class="rotulo" for="modelo_gemini">Modelo Gemini</label>
               <?php $modg = alCfg('modelo_gemini') ?: 'gemini-2.5-flash'; ?>
               <select id="modelo_gemini" name="modelo_gemini">
                 <option value="gemini-2.5-flash"<?= $modg === 'gemini-2.5-flash' ? ' selected' : '' ?>>gemini-2.5-flash (recomendado)</option>
-                <option value="gemini-2.5-pro"<?= $modg === 'gemini-2.5-pro' ? ' selected' : '' ?>>gemini-2.5-pro (mÃ¡ximo)</option>
+                <option value="gemini-2.5-pro"<?= $modg === 'gemini-2.5-pro' ? ' selected' : '' ?>>gemini-2.5-pro (máximo)</option>
               </select>
             </div>
             <div class="campo">
               <label class="rotulo" for="apikey">Chave da API Anthropic</label>
-              <div class="pw-wrap"><input type="password" id="apikey" name="anthropic_api_key" autocomplete="off" placeholder="<?= $tem_key ? 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢ gravada â€” preencha sÃ³ para trocar' : 'sk-ant-api03-â€¦' ?>"><?= alOlho() ?></div>
+              <div class="pw-wrap"><input type="password" id="apikey" name="anthropic_api_key" autocomplete="off" placeholder="<?= $tem_key ? '•••••••• gravada — preencha só para trocar' : 'sk-ant-api03-â€¦' ?>"><?= alOlho() ?></div>
             </div>
             <div class="campo">
               <label class="rotulo" for="modelo">Modelo Claude</label>
               <?php $mod = alCfg('modelo') ?: 'claude-sonnet-4-6'; ?>
               <select id="modelo" name="modelo">
                 <option value="claude-sonnet-4-6"<?= $mod === 'claude-sonnet-4-6' ? ' selected' : '' ?>>claude-sonnet-4-6 (recomendado)</option>
-                <option value="claude-haiku-4-5-20251001"<?= $mod === 'claude-haiku-4-5-20251001' ? ' selected' : '' ?>>claude-haiku-4-5 (econÃ´mico)</option>
-                <option value="claude-opus-4-8"<?= $mod === 'claude-opus-4-8' ? ' selected' : '' ?>>claude-opus-4-8 (mÃ¡ximo)</option>
+                <option value="claude-haiku-4-5-20251001"<?= $mod === 'claude-haiku-4-5-20251001' ? ' selected' : '' ?>>claude-haiku-4-5 (econômico)</option>
+                <option value="claude-opus-4-8"<?= $mod === 'claude-opus-4-8' ? ' selected' : '' ?>>claude-opus-4-8 (máximo)</option>
               </select>
             </div>
             <label class="marca-check"><input type="checkbox" name="ativo"<?= $ativo ? ' checked' : '' ?>> Monitor ativo (cron)</label>
             <label class="marca-check"><input type="checkbox" name="email_notif"<?= alCfg('email_notif') ? ' checked' : '' ?>> Avisar por e-mail (<?= e(ALERTAS_EMAIL_DESTINO) ?>)</label>
-            <button type="submit" class="btn" style="margin-top:16px">Gravar configuraÃ§Ã£o</button>
+            <button type="submit" class="btn" style="margin-top:16px">Gravar configuração</button>
           </form>
           <form method="post" class="sair"><input type="hidden" name="acao" value="logout"><button type="submit" class="btn btn-fantasma">Sair</button></form>
         </div>
@@ -1250,16 +1250,16 @@ details.guardados li>span:first-child{font:400 12px/1.4 var(--f-mono);color:var(
 <footer class="rodape">
   <div class="dentro">
     <div class="fontes">
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>WR LeilÃµes</h4><p>Leiloeiro de Boa Vista: TJRR, DETRAN-RR, JustiÃ§a Eleitoral, ExÃ©rcito.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_wr'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Amazonas LeilÃµes</h4><p>Onde leiloam o Tribunal de JustiÃ§a de Roraima e o TRF 1Âª RegiÃ£o (SeÃ§Ã£o de Roraima).</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_amazonas'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Spy LeilÃµes</h4><p>Agregador com os imÃ³veis da Caixa, de bancos e de leiloeiros do paÃ­s, inclusive venda direta.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_spy'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Garimpia</h4><p>Agregador de imÃ³veis de leilÃ£o: Caixa, Banco do Brasil, Resale, Pestana e outros.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_garimpia'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Receita Federal</h4><p>Lotes dos leilÃµes da Receita em Boa Vista, Pacaraima e Bonfim: veÃ­culos, mercadorias apreendidas e outros bens.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_receita'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>PNCP e Receita</h4><p>Credenciamentos no Portal Nacional de ContrataÃ§Ãµes e leilÃµes da Receita Federal em RR.</p><small>conferido <?= e(alRelativo(alCfg('fontes_ok'))) ?></small></div>
-      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Busca na web</h4><p>DiÃ¡rio Oficial, Folha BV, JUCERR, tribunais, prefeituras e cÃ¢maras de RR, uma vez por semana.</p><small>Ãºltima <?= e(alRelativo(alCfg('ultima_verificacao'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>WR Leilões</h4><p>Leiloeiro de Boa Vista: TJRR, DETRAN-RR, Justiça Eleitoral, Exército.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_wr'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Amazonas Leilões</h4><p>Onde leiloam o Tribunal de Justiça de Roraima e o TRF 1ª Região (Seção de Roraima).</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_amazonas'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Spy Leilões</h4><p>Agregador com os imóveis da Caixa, de bancos e de leiloeiros do país, inclusive venda direta.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_spy'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Garimpia</h4><p>Agregador de imóveis de leilão: Caixa, Banco do Brasil, Resale, Pestana e outros.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_garimpia'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Receita Federal</h4><p>Lotes dos leilões da Receita em Boa Vista, Pacaraima e Bonfim: veículos, mercadorias apreendidas e outros bens.</p><small>conferido <?= e(alRelativo(alCfg('lotes_ok_receita'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>PNCP e Receita</h4><p>Credenciamentos no Portal Nacional de Contratações e leilões da Receita Federal em RR.</p><small>conferido <?= e(alRelativo(alCfg('fontes_ok'))) ?></small></div>
+      <div class="bloco fonte"><h4><i class="ping ping-ouro"></i>Busca na web</h4><p>Diário Oficial, Folha BV, JUCERR, tribunais, prefeituras e câmaras de RR, uma vez por semana.</p><small>última <?= e(alRelativo(alCfg('ultima_verificacao'))) ?></small></div>
     </div>
-    <p class="rodape-termos">O uso desta pÃ¡gina estÃ¡ sujeito aos <a href="<?= e(ALERTAS_URL) ?>/termos">Termos de Uso</a>. A consulta Ã© pessoal: Ã© proibido copiar, republicar ou repassar o conteÃºdo a terceiros â€” em grupos, redes sociais, planilhas ou outros sites â€” sem autorizaÃ§Ã£o por escrito.</p>
-    <p class="rodape-pe"><span>ALERTAS RR Â· monitor de leilÃµes e editais de leiloeiro em Roraima Â· <a href="<?= e(ALERTAS_URL) ?>/termos">Termos de Uso</a></span><span>Mapas: IBGE, malha municipal Â· ruas Â© OpenStreetMap Â· <?= date('Y') ?></span></p>
+    <p class="rodape-termos">O uso desta página está sujeito aos <a href="<?= e(ALERTAS_URL) ?>/termos">Termos de Uso</a>. A consulta é pessoal: é proibido copiar, republicar ou repassar o conteúdo a terceiros — em grupos, redes sociais, planilhas ou outros sites — sem autorização por escrito.</p>
+    <p class="rodape-pe"><span>Radar RR · monitor de leilões e editais de leiloeiro em Roraima · <a href="<?= e(ALERTAS_URL) ?>/termos">Termos de Uso</a></span><span>Mapas: IBGE, malha municipal · ruas © OpenStreetMap · <?= date('Y') ?></span></p>
   </div>
 </footer>
 
