@@ -22,10 +22,13 @@ function rcopy($src, $dst) {
 
 if (isset($_GET['token']) && $_GET['token'] === 'ms_radar_deploy_9921') {
 
-    // 1. Garante a copia de email_templates.php e novo index.php para alertas
+    // 1. Garante a copia de email_templates.php, lib_lotes.php e novo index.php para alertas e radar
     copy($v2Dir . '/email_templates.php', $alertasDir . '/email_templates.php');
     if (file_exists($v2Dir . '/index.php')) {
         copy($v2Dir . '/index.php', $alertasDir . '/index.php');
+    }
+    if (file_exists($v2Dir . '/lib_lotes.php')) {
+        copy($v2Dir . '/lib_lotes.php', $alertasDir . '/lib_lotes.php');
     }
 
     // 2. Copia recursiva de alertas/ para radar/
