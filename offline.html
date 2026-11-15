@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sem Conexão &mdash; Mayco Santos Leiloeiro Oficial</title>
+  <meta name="theme-color" content="#07090E">
+  <link rel="icon" type="image/svg+xml" href="/assets/logos/favicon.svg">
+  <style>
+    :root {
+      --vazio: #07090E;
+      --materia: rgba(15, 23, 42, 0.75);
+      --limite: rgba(255, 255, 255, 0.08);
+      --limite-destaque: rgba(245, 158, 11, 0.25);
+      --laranja: #FF6A00;
+      --ouro: #F59E0B;
+      --luz: #F8FAFC;
+      --poeira: #94A3B8;
+      --sombra: rgba(0, 0, 0, 0.5);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--vazio);
+      background-image: 
+        radial-gradient(circle at 50% 15%, rgba(255, 106, 0, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 50% 85%, rgba(15, 23, 42, 0.8) 0%, transparent 70%);
+      color: var(--luz);
+      padding: 24px 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .cartao {
+      max-width: 460px;
+      width: 100%;
+      background: var(--materia);
+      border: 1px solid var(--limite);
+      border-radius: 20px;
+      padding: 40px 32px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 50px var(--sombra), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+    .cartao::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--ouro), transparent);
+      opacity: 0.8;
+    }
+    .topo-icone {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .icone-container {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid var(--limite-destaque);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px -5px rgba(255, 106, 0, 0.2);
+    }
+    .icone-container svg {
+      width: 36px;
+      height: 36px;
+      stroke: var(--laranja);
+    }
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #F87171;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .badge-ponto {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 8px #EF4444;
+    }
+    .cabecalho-texto {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--luz);
+      margin-bottom: 8px;
+    }
+    .subtitulo {
+      font-size: 13px;
+      color: var(--poeira);
+      font-weight: 500;
+    }
+    .texto-justificado {
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #CBD5E1;
+      margin-bottom: 20px;
+    }
+    .bloco-seguranca {
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-left: 3px solid var(--ouro);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 28px;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--ouro);
+    }
+    .bloco-seguranca strong {
+      color: #FDE68A;
+      font-weight: 600;
+      display: inline;
+    }
+    .acoes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn-reconectar {
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 48px;
+      padding: 0 24px;
+      border-radius: 12px;
+      border: none;
+      color: #FFFFFF;
+      background: linear-gradient(135deg, #FF6A00 0%, #D95D00 100%);
+      box-shadow: 0 4px 20px -3px rgba(255, 106, 0, 0.45);
+      transition: all 0.2s ease;
+    }
+    .btn-reconectar:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px -2px rgba(255, 106, 0, 0.6);
+      filter: brightness(1.08);
+    }
+    .btn-reconectar:active {
+      transform: translateY(0);
+    }
+    .btn-reconectar svg {
+      width: 16px;
+      height: 16px;
+      stroke: #FFFFFF;
+      transition: transform 0.3s ease;
+    }
+    .btn-reconectar:hover svg {
+      transform: rotate(180deg);
+    }
+    .rodape-info {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11.5px;
+      color: #64748B;
+      letter-spacing: 0.02em;
+    }
+    .rodape-info strong {
+      color: #94A3B8;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main class="cartao" role="main">
+    <div class="topo-icone">
+      <div class="icone-container">
+        <!-- SVG Wi-Fi Desconectado / Radar Offline -->
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+          <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+          <line x1="12" y1="20" x2="12.01" y2="20"></line>
+        </svg>
+      </div>
+    </div>
+
+    <div class="cabecalho-texto">
+      <span class="badge-status">
+        <span class="badge-ponto"></span>
+        Modo Offline
+      </span>
+      <h1>Você está sem conexão</h1>
+      <p class="subtitulo">Aguardando restabelecimento da rede</p>
+    </div>
+
+    <p class="texto-justificado">
+      Não foi possível estabelecer contato seguro com o nosso servidor central no momento. Seus dados e preferências locais continuam preservados no dispositivo. Assim que a sua rede for restabelecida, o ambiente retornará ao fluxo normal de operações.
+    </p>
+
+    <div class="bloco-seguranca">
+      <strong>Aviso de Segurança:</strong> Em observância às normas de auditoria e aos princípios da leiloaria eletrônica oficial, propostas e lances só possuem validade jurídica plena com a página transmitida e homologada ao vivo. Nenhuma oferta pode ser computada a partir de conteúdos em cache ou páginas guardadas sem comunicação em tempo real.
+    </div>
+
+    <div class="acoes">
+      <button type="button" class="btn-reconectar" onclick="location.reload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        Tentar Reconectar
+      </button>
+    </div>
+
+    <footer class="rodape-info">
+      <strong>Mayco Santos</strong> &bull; Leiloeiro Oficial
+    </footer>
+  </main>
+</body>
+</html>

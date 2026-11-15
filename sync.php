@@ -98,7 +98,18 @@ if (isset($_GET['token']) && $_GET['token'] === 'ms_radar_deploy_9921') {
     $libPhp = preg_replace('/function alNotificar\(\$itens, \$novos, \$rev\)\s*\{.*?\n\}/s', $novaNotificarEditais, $libPhp);
     file_put_contents($alertasDir . '/lib.php', $libPhp);
 
-    echo "EMAILS_ENGINE_UPGRADED";
+    // 4. Atualiza os arquivos offline.html (raiz e colecao) se offline.html existir no deploy
+    if (file_exists($v2Dir . '/offline.html')) {
+        $offlineContent = file_get_contents($v2Dir . '/offline.html');
+        $publicHtml = dirname($alertasDir); // /home/u145126467/domains/maycosantos.lel.br/public_html
+        
+        file_put_contents($publicHtml . '/offline.html', $offlineContent);
+        if (is_dir($publicHtml . '/colecao')) {
+            file_put_contents($publicHtml . '/colecao/offline.html', $offlineContent);
+        }
+    }
+
+    echo "EMAILS_AND_OFFLINE_UPGRADED";
     exit;
 }
 echo "ACCESS_DENIED";
